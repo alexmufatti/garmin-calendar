@@ -1,0 +1,27 @@
+{
+  "name": "garmin-calendar",
+  "version": "0.1.0",
+  "description": "Sync Garmin planned workouts to FastMail CalDAV calendar",
+  "main": "src/index.ts",
+  "scripts": {
+    "fetch": "ts-node src/index.ts fetch",
+    "workouts": "ts-node src/index.ts workouts",
+    "sync": "ts-node src/index.ts sync",
+    "resync": "ts-node src/index.ts resync",
+    "calendars": "ts-node src/index.ts calendars",
+    "durations": "ts-node src/index.ts durations",
+    "build": "tsc --build",
+    "start": "node build/index.js sync"
+  },
+  "dependencies": {
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.7",
+    "garmin-connect": "^1.6.2",
+    "tsdav": "^2.0.11"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
