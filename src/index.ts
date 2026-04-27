@@ -8,22 +8,20 @@ const command = process.argv[2];
 async function main(): Promise<void> {
   switch (command) {
     case 'fetch':
-      // Debug: stampa il JSON grezzo restituito da Garmin
-      console.log('Recupero calendario grezzo da Garmin...\n');
+      console.log('Fetching raw calendar from Garmin...\n');
       const raw = await getRawCalendar();
       console.log(JSON.stringify(raw, null, 2));
       break;
 
     case 'workouts':
-      // Debug: stampa gli allenamenti pianificati già parsati
-      console.log('Recupero allenamenti pianificati...\n');
+      console.log('Fetching upcoming planned workouts...\n');
       const workouts = await getUpcomingWorkouts();
       console.log(JSON.stringify(workouts, null, 2));
-      console.log(`\nTotale: ${workouts.length} allenamenti`);
+      console.log(`\nTotal: ${workouts.length} workouts`);
       break;
 
     case 'durations': {
-      console.log('Durate allenamenti (Garmin vs evento calendario):\n');
+      console.log('Workout durations (Garmin vs calendar event):\n');
       const extraMin = Number(process.env.EXTRA_MINUTES ?? 0);
       const ws = await getUpcomingWorkouts();
       const pad = (s: string, n: number) => s.padEnd(n);
@@ -39,17 +37,15 @@ async function main(): Promise<void> {
     }
 
     case 'calendars':
-      // Debug: elenca i calendari FastMail disponibili
       await listCalendars();
       break;
 
     case 'detail': {
-      // ts-node src/index.ts detail <workoutTemplateId>
       const { GarminConnect } = await import('garmin-connect');
       const gc = new GarminConnect({ username: process.env.GARMIN_EMAIL!, password: process.env.GARMIN_PASSWORD! });
       await gc.login();
       const wid = process.argv[3];
-      if (!wid) { console.error('Uso: ts-node src/index.ts detail <workoutTemplateId>'); break; }
+      if (!wid) { console.error('Usage: ts-node src/index.ts detail <workoutTemplateId>'); break; }
       const detail = await gc.getWorkoutDetail({ workoutId: wid });
       console.log(JSON.stringify(detail, null, 2));
       break;
@@ -64,11 +60,12 @@ async function main(): Promise<void> {
       break;
 
     default:
-      console.log('Uso:');
-      console.log('  npm run fetch      — stampa JSON grezzo da Garmin (debug)');
-      console.log('  npm run workouts   — stampa allenamenti pianificati parsati');
-      console.log('  ts-node src/index.ts calendars  — elenca calendari FastMail');
-      console.log('  npm run sync       — sincronizza su FastMail CalDAV');
+      console.log('Usage:');
+      console.log('  npm run fetch      — print raw JSON from Garmin (debug)');
+      console.log('  npm run workouts   — print parsed upcoming workouts');
+      console.log('  npm run calendars  — list available CalDAV calendars');
+      console.log('  npm run sync       — sync workouts to CalDAV calendar');
+      console.log('  npm run resync     — force-update all events');
   }
 }
 

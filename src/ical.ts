@@ -31,7 +31,7 @@ export function generateICS(params: {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//garmin-calendar//codeandrun.it//EN',
+    'PRODID:-//garmin-calendar//garmin-caldav-sync//EN',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
     `UID:${uid}`,

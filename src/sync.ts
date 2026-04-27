@@ -9,7 +9,7 @@ export async function resyncAll(): Promise<void> {
   const workouts = await getUpcomingWorkouts();
   const extraSeconds = Number(process.env.EXTRA_MINUTES ?? 0) * 60;
 
-  console.log(`\nResync forzato di tutti gli eventi (${workouts.length} allenamenti)...`);
+  console.log(`\nForce-resyncing all events (${workouts.length} workouts)...`);
 
   for (const workout of workouts) {
     const entry = getEntry(state, workout.id);
@@ -21,7 +21,7 @@ export async function resyncAll(): Promise<void> {
   }
 
   saveState(state);
-  console.log('\nResync completato.');
+  console.log('\nResync complete.');
 }
 
 export async function syncWorkouts(): Promise<void> {
@@ -31,7 +31,7 @@ export async function syncWorkouts(): Promise<void> {
   const extraSeconds = Number(process.env.EXTRA_MINUTES ?? 0) * 60;
   const deleteRemoved = process.env.DELETE_REMOVED === 'true';
 
-  console.log(`\nAllenamenti trovati su Garmin: ${workouts.length}`);
+  console.log(`\nWorkouts found on Garmin: ${workouts.length}`);
 
   const activeIds = new Set(workouts.map((w) => w.id));
 
@@ -47,23 +47,20 @@ export async function syncWorkouts(): Promise<void> {
     }
   }
 
-  // Gestisce allenamenti rimossi da Garmin
   for (const [garminId, entry] of Object.entries(state)) {
     if (activeIds.has(garminId)) continue;
 
     if (deleteRemoved) {
-      console.log(`  🗑  eliminato  ${entry.garminDate}  (Garmin ID: ${garminId})`);
+      console.log(`  🗑  deleted  ${entry.garminDate}  (Garmin ID: ${garminId})`);
       await deleteEvent(entry.caldavHref).catch((e) =>
-        console.warn(`    ↳ impossibile eliminare evento: ${e.message}`)
+        console.warn(`    ↳ could not delete event: ${e.message}`)
       );
       removeEntry(state, garminId);
-    } else {
-      // lascia l'evento sul calendario, non toccare lo stato
     }
   }
 
   saveState(state);
-  console.log('\nSync completato.');
+  console.log('\nSync complete.');
 }
 
 async function handleCreate(
@@ -72,7 +69,7 @@ async function handleCreate(
   defaultTime: string,
   extraSeconds: number
 ): Promise<void> {
-  const uid = `garmin-cal-${workout.id}@codeandrun.it`;
+  const uid = `garmin-cal-${workout.id}@garmin-caldav-sync`;
   const ics = generateICS({
     uid,
     title: workout.title,
@@ -89,9 +86,9 @@ async function handleCreate(
       caldavUid: uid,
       garminDate: workout.date,
     });
-    console.log(`  ✅ creato   ${workout.date}  ${workout.title}`);
+    console.log(`  ✅ created  ${workout.date}  ${workout.title}`);
   } catch (e: any) {
-    console.error(`  ❌ errore creazione ${workout.title}: ${e.message}`);
+    console.error(`  ❌ error creating ${workout.title}: ${e.message}`);
   }
 }
 
@@ -121,9 +118,9 @@ async function handleDateChange(
       garminDate: workout.date,
     });
     console.log(
-      `  🔄 spostato ${entry.garminDate} → ${workout.date}  ${workout.title}  (ora: ${currentTime})`
+      `  🔄 moved    ${entry.garminDate} → ${workout.date}  ${workout.title}  (time: ${currentTime})`
     );
   } catch (e: any) {
-    console.error(`  ❌ errore aggiornamento ${workout.title}: ${e.message}`);
+    console.error(`  ❌ error updating ${workout.title}: ${e.message}`);
   }
 }

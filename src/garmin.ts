@@ -76,7 +76,7 @@ export async function getUpcomingWorkouts(daysAhead?: number): Promise<GarminWor
       workouts.push({
         id: calItemId,
         workoutTemplateId: workoutId,
-        title: item.title ?? 'Allenamento Garmin',
+        title: item.title ?? 'Garmin Workout',
         date,
         durationSeconds,
       });

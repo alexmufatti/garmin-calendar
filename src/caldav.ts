@@ -6,11 +6,14 @@ let _calendar: DAVCalendar | null = null;
 export async function getClient(): Promise<DAVClient> {
   if (_client) return _client;
 
+  const serverUrl = process.env.CALDAV_URL;
+  if (!serverUrl) throw new Error('CALDAV_URL is not set in .env');
+
   _client = new DAVClient({
-    serverUrl: 'https://caldav.fastmail.com',
+    serverUrl,
     credentials: {
-      username: process.env.FASTMAIL_EMAIL!,
-      password: process.env.FASTMAIL_APP_PASSWORD!,
+      username: process.env.CALDAV_USERNAME!,
+      password: process.env.CALDAV_PASSWORD!,
     },
     authMethod: 'Basic',
     defaultAccountType: 'caldav',
@@ -26,19 +29,19 @@ export async function getCalendar(): Promise<DAVCalendar> {
   const client = await getClient();
   const calendars = await client.fetchCalendars();
 
-  if (!calendars.length) throw new Error('Nessun calendario trovato su FastMail');
+  if (!calendars.length) throw new Error('No calendars found on CalDAV server');
 
-  const name = process.env.FASTMAIL_CALENDAR_NAME;
+  const name = process.env.CALDAV_CALENDAR_NAME;
   if (name) {
     const match = calendars.find((c) => c.displayName === name);
     if (!match) {
-      const names = calendars.map((c) => c.displayName ?? '(senza nome)').join(', ');
-      throw new Error(`Calendario "${name}" non trovato. Disponibili: ${names}`);
+      const names = calendars.map((c) => c.displayName ?? '(unnamed)').join(', ');
+      throw new Error(`Calendar "${name}" not found. Available: ${names}`);
     }
     _calendar = match;
   } else {
     _calendar = calendars[0];
-    console.log(`Calendario usato: ${_calendar.displayName ?? _calendar.url}`);
+    console.log(`Using calendar: ${_calendar.displayName ?? _calendar.url}`);
   }
 
   return _calendar;
@@ -96,6 +99,6 @@ export async function deleteEvent(href: string): Promise<void> {
 export async function listCalendars(): Promise<void> {
   const client = await getClient();
   const calendars = await client.fetchCalendars();
-  console.log('Calendari disponibili:');
-  calendars.forEach((c) => console.log(` - ${c.displayName ?? '(senza nome)'} → ${c.url}`));
+  console.log('Available calendars:');
+  calendars.forEach((c) => console.log(` - ${c.displayName ?? '(unnamed)'} → ${c.url}`));
 }

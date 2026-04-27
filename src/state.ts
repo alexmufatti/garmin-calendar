@@ -9,7 +9,7 @@ export function loadState(): State {
   try {
     return JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
   } catch {
-    console.warn('State file corrotto, parto da zero.');
+    console.warn('State file is corrupted, starting fresh.');
     return {};
   }
 }
